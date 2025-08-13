@@ -1,3 +1,5 @@
+use rand::random_bool;
+
 use crate::grid;
 
 pub struct GameOfLife {
@@ -90,7 +92,10 @@ impl GameOfLifeIterator {
             },
             LifeState::Dead => match live_neighbors {
                 3 => Some(true),
-                n if (0..=8).contains(&n) => Some(false),
+                n if (0..=8).contains(&n) => Some(
+                    // add a random chance of spawning, because connor said so
+                    random_bool(0.001)
+                ),
                 _ => panic!("unknown rule"),
             },
         }
