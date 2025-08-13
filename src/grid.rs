@@ -1,14 +1,12 @@
-use std::{cell, fmt::format, ops::Index};
+use std::ops::{Index, IndexMut};
 
 use ratatui::{
+    Frame,
     layout::Rect,
-    style::Color,
+    style::{Color, Stylize},
     symbols::Marker,
     text::Line,
-    widgets::{
-        Block, Paragraph, Widget,
-        canvas::{Canvas, Context, Map, MapResolution, Points, Rectangle},
-    },
+    widgets::{Block, canvas::Canvas},
 };
 
 #[derive(Debug, Clone, Default)]
@@ -18,6 +16,13 @@ pub struct Grid {
 
 type Cell = Option<bool>;
 
+impl IndexMut<(usize, usize)> for Grid {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        // &self[index.1][index.0]
+        // &self.cells
+        &mut self.cells[index.1][index.0]
+    }
+}
 impl Index<(usize, usize)> for Grid {
     type Output = Cell;
 
@@ -42,48 +47,48 @@ impl Grid {
             None => 0,
         }
     }
-    pub fn get_widget(
-        &self,
-        area: &Rect,
-        iteration: usize,
-    ) -> Canvas<'_, impl Fn(&mut ratatui::widgets::canvas::Context<'_>)> {
-        Canvas::default()
+    fn shade_cell(i: usize, j: usize, iteration: usize) -> Color {
+        let iter_offset = (if iteration % 256 <= 128 {
+            iteration % 129
+        } else {
+            128 - iteration % 129
+        });
+        let offset = |x: usize| (x * 3 + iter_offset) as u8 % 255;
+        Color::Rgb(offset(i + j), offset(i * j), offset(1))
+    }
+    // pub fn get_widget(
+    pub fn render(&self, frame: &mut Frame, area: &Rect, iteration: usize) {
+        let canvas = Canvas::default()
             .marker(Marker::Block)
-            .block(Block::bordered().title("GoL"))
+            .block(
+                Block::bordered()
+                    .title("GoL")
+                    .title_bottom(Line::from("? (Help)").right_aligned()),
+            )
             .x_bounds([-0.0, self.width() as f64])
             .y_bounds([-0.0, self.height() as f64])
             .paint(move |ctx| {
+                // "█"
                 self.cells.iter().enumerate().for_each(|(j, row)| {
                     row.iter().enumerate().for_each(|(i, cell)| {
                         if let Some(true) = cell {
-                            let iter_offset: usize = (iteration * 2
-                                + usize::try_from(
-                                    iteration as i32 * if iteration > 128 { 1 } else { -1 },
-                                )
-                                .unwrap_or(0))
-                                % 255;
-                            // let offset = (i as f64, j as f64);
-                            let offset = |x: usize| (x * 3 + iter_offset) as u8 % 255;
-                            ctx.print(0.0, 0.0, format!("{iter_offset}"));
-                            ctx.draw(&Rectangle {
-                                x: i as f64 + 0.5,
-                                y: j as f64 + 0.5,
-                                width: 0.1,
-                                height: 0.1,
-                                color: Color::Rgb(
-                                    offset(i + j),
-                                    offset(i * j),
-                                    offset(1),
-                                    // (i * 2 + iteration) as u8 % 255,
-                                    // (j * 2 + iteration) as u8 % 255,
-                                    // (i + j * 3 + iteration) as u8 % 255,
-                                ),
-                            });
+                            ctx.print(0.0, 0.0, format!("{iteration}"));
+                            // ███
+                            let shade = Self::shade_cell(i, j, iteration);
+                            ctx.print(i as f64, j as f64, Line::from("█").fg(shade).bg(shade));
+                            // ctx.draw(&Rectangle {
+                            //     x: i as f64 + 0.5,
+                            //     y: j as f64 + 0.5,
+                            //     width: 0.1,
+                            //     height: 0.1,
+                            //     color: Self::shade_cell(i, j, iteration),
+                            // });
                         }
                     })
                 });
                 ctx.layer();
-            })
+            });
+        frame.render_widget(canvas, *area);
     }
 }
 
