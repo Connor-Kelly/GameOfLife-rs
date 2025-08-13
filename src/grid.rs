@@ -73,7 +73,7 @@ impl Grid {
                 self.cells.iter().enumerate().for_each(|(j, row)| {
                     row.iter().enumerate().for_each(|(i, cell)| {
                         if let Some(true) = cell {
-                            ctx.print(0.0, 0.0, format!("{iteration}"));
+                            // ctx.print(0.0, 0.0, format!("{iteration}"));
                             // ███
                             let shade = Self::shade_cell(i, j, iteration);
                             ctx.print(i as f64, j as f64, Line::from("█").fg(shade).bg(shade));
