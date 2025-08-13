@@ -95,34 +95,36 @@ impl App {
 
     /// Renders the user interface.
     fn render(&mut self, frame: &mut Frame) {
-        let title = Line::from("Ratatui Simple Template")
-            .bold()
-            .blue()
-            .centered();
+        let title = Line::from("Connor's Game of Life").bold().blue().centered();
 
-        let par = Paragraph::new(format!(
-            "Connor's Game of Life
-            Press `Esc`, `Ctrl-C` or `q` to stop running.\n\
-            grid size: {}, {}
-            ",
-            self.grid.height(),
-            self.grid.width()
-        ))
-        .block(Block::bordered().title(title))
-        .centered();
+        // let par = Paragraph::new(format!(
+        //     "Connor's Game of Life
+        //     Press `Esc`, `Ctrl-C` or `q` to stop running.\n\
+        //     grid size: {}, {}
+        //     ",
+        //     self.grid.height(),
+        //     self.grid.width()
+        // ))
+        // .block(Block::bordered().title(title))
+        // .centered();
 
-        let layout = Layout::new(
-            ratatui::layout::Direction::Vertical,
-            [Constraint::Length(5), Constraint::Fill(1)],
-        )
-        .split(frame.area());
+        // let layout = Layout::new(
+        //     ratatui::layout::Direction::Vertical,
+        //     [Constraint::Length(5), Constraint::Fill(1)],
+        // )
+        // .split(frame.area());
 
-        frame.render_widget(par, layout[0]);
+        // frame.render_widget(par, layout[0]);
 
-        self.grid.render(frame, &layout[1], self.game.iteration);
+        let block = Block::bordered()
+            .title("Connor's Game of Life")
+            .title_bottom(Line::from("? (Help)").right_aligned());
+        self.grid
+            .render(frame,&block,  &frame.area(), self.game.iteration);
 
         if !self.game_running {
-            self.mod_mode.render(frame, &self.grid, &layout[1]);
+            self.mod_mode
+                .render(frame, &block, &self.grid, &frame.area());
         }
 
         if self.show_help {
@@ -173,12 +175,13 @@ impl App {
                     if self.mod_mode.cursor_coord.0 > 0 {
                         self.mod_mode.cursor_coord.0 -= 1
                     }
-                },
+                }
                 KeyCode::Char('t') => {
-                    self.grid[self.mod_mode.cursor_coord] = match self.grid[self.mod_mode.cursor_coord] {
-                        Some(b) => Some(!b),
-                        None => Some(false),
-                    };
+                    self.grid[self.mod_mode.cursor_coord] =
+                        match self.grid[self.mod_mode.cursor_coord] {
+                            Some(b) => Some(!b),
+                            None => Some(false),
+                        };
                     self.game.grid = self.grid.clone();
                 }
                 _ => {

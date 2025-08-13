@@ -57,13 +57,14 @@ impl Grid {
         Color::Rgb(offset(i + j), offset(i * j), offset(1))
     }
     // pub fn get_widget(
-    pub fn render(&self, frame: &mut Frame, area: &Rect, iteration: usize) {
+    pub fn render(&self,frame: &mut Frame, block: &Block, area: &Rect, iteration: usize) {
         let canvas = Canvas::default()
             .marker(Marker::Block)
             .block(
-                Block::bordered()
-                    .title("GoL")
-                    .title_bottom(Line::from("? (Help)").right_aligned()),
+                block.clone()
+                // Block::bordered()
+                //     .title("GoL")
+                //     .title_bottom(Line::from("? (Help)").right_aligned()),
             )
             .x_bounds([-0.0, self.width() as f64])
             .y_bounds([-0.0, self.height() as f64])

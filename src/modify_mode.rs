@@ -29,10 +29,10 @@ impl ModifyMode {
         }
     }
 
-    pub fn render(&mut self, frame: &mut Frame, grid: &grid::Grid, area: &Rect) {
+    pub fn render(&mut self, frame: &mut Frame, block: &Block, grid: &grid::Grid, area: &Rect) {
         let canvas = Canvas::default()
             // .marker(Marker::Dot)
-            .block(Block::bordered())
+            .block(block.clone())
             .x_bounds([-0.0, grid.width() as f64])
             .y_bounds([-0.0, grid.height() as f64])
             .paint(|ctx| {
@@ -44,21 +44,15 @@ impl ModifyMode {
                 //     color: ratatui::style::Color::Gray,
                 // });
                 let cursor = match grid[self.cursor_coord] {
-                    Some(true) => {
-                        "X".fg(Color::White).bg(Color::DarkGray)
-                    }
-                    _ => {
-
-                        "X".bg(Color::White).fg(Color::DarkGray)
-                    }
+                    Some(true) => "X".fg(Color::White).bg(Color::DarkGray),
+                    _ => "X".bg(Color::White).fg(Color::DarkGray),
                 };
                 ctx.print(
                     self.cursor_coord.0 as f64,
                     self.cursor_coord.1 as f64,
-                    cursor
-                    // "X"
-                    //     .bg(Color::Reset)
-                        // .fg(Color::White),
+                    cursor, // "X"
+                            //     .bg(Color::Reset)
+                            // .fg(Color::White),
                 );
             });
 
